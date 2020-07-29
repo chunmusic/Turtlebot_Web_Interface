@@ -1,0 +1,19 @@
+<launch>
+    <!-- web -->
+    <include file="$(find course_web_dev_ros)/launch/web.launch" />
+
+    <!-- tf2 web -->
+    <!-- <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" /> -->
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+    <node name="tf2_web_republisher" pkg="tf2_web_republisher" type="tf2_web_republisher" />
+
+    <!-- mapping -->
+    <include file="$(find course_web_dev_ros)/launch/mapping.launch">
+        <arg name="scan_topic"  default="/kobuki/laser/scan" />
+        <arg name="base_frame"  default="base_link"/>
+        <arg name="odom_frame"  default="odom" />
+    </include>
+
+    <!-- action server -->
+    <node name="" pkg="course_web_dev_ros" type="turtlebot_2_action_server.py" />
+</launch>

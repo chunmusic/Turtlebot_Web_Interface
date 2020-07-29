@@ -1,0 +1,8 @@
+# goal definition
+float32 total
+---
+# result definition
+float32 result
+---
+# feedback
+int32 progress

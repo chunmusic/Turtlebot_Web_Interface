@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<launch>
+    <include file="$(eval find('tc_worlds_robots') + '/launch/world_ardrone_igniteworld.launch')">
+    </include>
+
+    <arg name="put_robot_in_world" default="true" />
+    <arg name="put_robot_in_world_package" default="tc_worlds_robots" />
+    <arg name="put_robot_in_world_launch" default="spawn_hector.launch" />
+
+    <group if="$(arg put_robot_in_world)">
+        <include file="$(eval find(put_robot_in_world_package) + '/launch/' + put_robot_in_world_launch)">
+        </include>
+    </group>
+
+</launch>

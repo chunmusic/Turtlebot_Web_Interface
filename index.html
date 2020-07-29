@@ -1,0 +1,309 @@
+<html>
+
+<head>
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+		integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+	<script type="text/javascript" src="https://static.robotwebtools.org/roslibjs/current/roslib.min.js">
+
+	</script>
+	<script src="https://cdn.jsdelivr.net/npm/vue">
+
+	</script>
+	<script src="https://cdn.jsdelivr.net/npm/eventemitter2@5.0.1/lib/eventemitter2.min.js">
+
+	</script>
+	<script type="text/javascript" src="mjpegcanvas.min.js">
+	</script>
+
+	<script type="text/javascript" src="https://static.robotwebtools.org/EaselJS/current/easeljs.min.js"></script>
+	<script type="text/javascript" src="https://static.robotwebtools.org/EventEmitter2/current/eventemitter2.min.js">
+	</script>
+	<script type="text/javascript" src="https://static.robotwebtools.org/ros2djs/current/ros2d.min.js"></script>
+
+	<script src="./libs/three.min.js"></script>
+	<script src="./libs/ColladaLoader.js"></script>
+	<script src="./libs/ColladaLoader2.js"></script>
+	<script src="./libs/STLLoader.js"></script>
+	<script src="./libs/ros3d.min.js"></script>
+
+	<style type="text/css">
+		#dragstartzone {
+			position: relative;
+			display: inline-block;
+			width: 200px;
+			height: 200px;
+			border: 1px solid #333;
+			border-radius: 50%;
+			z-index: 10;
+			-moz-user-select: -moz-none;
+			-khtml-user-select: none;
+			-webkit-user-select: none;
+		}
+
+		#dragCircle {
+			position: absolute;
+			z-index: 9;
+			border: 1px solid transparent;
+			border-radius: 50%;
+			background-color: rgba(0, 0, 0, 30%);
+			-moz-user-select: -moz-none;
+			-khtml-user-select: none;
+			-webkit-user-select: none;
+		}
+
+		#dragCircle:hover {
+			background-color: lightcoral;
+		}
+	</style>
+
+</head>
+
+<body class="d-flex flex-column h-100">
+	<header class="header">
+		<div class="container">
+			<div class="jumbotron text-center">
+				<h1>Hello from Robot Ignite Academy+</h1>
+				<p>Let's connect our website to a ROS robot - Exercise10!</p>
+			</div>
+		</div>
+	</header>
+	<main id='app'>
+		<div class="container">
+			<div class="row">
+				<div class="col-md-6">
+					<div class="card">
+						<div class="card-body">
+							<h3>{{menu_title}}</h3>
+							<hr>
+							<label>ROSBridge address</label>
+							<br>
+							<input type="text" v-model ="rosbridge_address"/>
+							<!--sync rosbridge_address to textbox-->
+							<br>
+							<br>
+							<button class="mt-2 btn btn-success" v-if="connected" @click="disconnect">Connected!</button>
+							<button class="mt-2 btn btn-primary" v-else @click="connect">Connect!</button>
+							<!-- Button with v-if will be shown only variable defined in javascript file is true  -->
+							<!-- @click="disconnect" when click, it will call disconnect method >-->
+							<br>
+						</div>
+						</div>
+					</div>
+					<div class="col-md-6" style="overflow:auto;">
+						<div class="row">
+							<div class="col-md-12 text-center">
+								<h5>2D Map</h5>
+							</div>
+
+							<div class="col-md-12 text-center my-2">
+								<div id="map"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<br>
+				<div class="col-md-12 col-sm-12" style="overflow:auto;">
+					<div class="card">
+						<div class="row">
+							<div class="col-md-12 text-center">
+								<br>
+								<h3>Commands</h3>
+								<br>
+								<p>
+									<span>X: {{ position.x.toFixed(2) }}</span>
+									<br>
+									<span>Y: {{ position.y.toFixed(2) }}</span>
+									<br>
+									<span>Z: {{ position.z.toFixed(2) }}</span>
+								</p>
+							</div>
+
+							<!-- 1st row -->
+							<div class="col-md-12 text-center my-2">
+								<button @click="forward" :disabled="loading || !connected" class="btn btn-primary">Go forward</button>
+							</div>
+
+							<!-- 2nd row -->
+							<div class="col-md-4 text-center my-2">
+								<br>
+								<button @click="turnLeft" :disabled="loading || !connected" class="btn btn-primary">Turn left</button>
+							</div>
+							<div class="col-md-4 text-center my-2">
+								<br>
+								<button @click="stop" :disabled="loading || !connected" class="btn btn-danger">Stop</button>
+							</div>
+							<div class="col-md-4 text-center my-2">
+								<br>
+								<button @click="turnRight" :disabled="loading || !connected" class="btn btn-primary">Turn right</button>
+							</div>
+
+							<!-- 3rd row -->
+							<div class="col-md-12 text-center my-2">
+								<br>
+								<button @click="backward" :disabled="loading || !connected" class="btn btn-primary">Go backward</button>
+							</div>
+						</div>
+
+						<br>
+
+					</div>
+						<br>
+					</div>
+						<div class="col-md-12">
+							<div class="card">
+								<div class="row">
+									<div class="col-md-6">
+										<div id="divCamera"></div>
+									</div>
+
+									<div class="col-md-6">
+										<div id="divCamera2"></div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<br>
+						<div class="col-md-12 col-sm-6" style="overflow:auto;">
+							<!-- 1st row -->
+							<div class="row">
+								<!-- Available parameters -->
+								<div class="col-md-6 text-center my-2">
+									<h5>Linear X</h5>
+									<input type="range" min="0" max="2" step="0.1" v-model.number="linear_x_val" />
+									<p>{{ linear_x_val }}</p>
+								</div>
+								<div class="col-md-6 text-center my-2">
+									<h5>Angular Z</h5>
+									<input type="range" min="-2" max="2" step="0.1" v-model.number="angular_z_val" />
+									<p>{{ angular_z_val }}</p>
+								</div>
+
+								<div class="col-md-12 text-center">
+									<button @click="set_param" :disabled="loading || !connected || service_busy" class="btn btn-success">Set param</button>
+									<button @click="stop_param" :disabled="loading || !connected || service_busy" class="btn btn-danger">Stop</button>
+								</div>
+
+							</div>
+						</div>
+						<br>
+						<div class="col-md-12 col-sm-6" style="overflow:auto;">
+							<div class="row">
+								<div class="col-md-6" style="overflow:auto;">
+									<div class="card">
+										<div class="row">
+											<div class="col-md-6">
+												<div id="div3DViewer"></div>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="card">
+										<div class="row">
+											<div class="card-body text-center">
+												<h2 class="text-center">Joystick</h2>
+												<hr>
+												<p>Some actions for the robot</p>
+												<div id="dragstartzone" @mousedown="startDrag" @mousemove="doDrag">
+												</div>
+												<div id="dragCircle" :style="dragCircleStyle"></div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<br>
+						<br>
+						<div class="col-md-12 col-sm-6" style="overflow:auto;">
+							<div class="row">
+								<div class="col-md-6 text-center">
+									<h5>Action client data</h5>
+									<div>
+										<label>Goal</label>
+										<br>
+										<label>X</label>
+										<input type="number" v-model.number="action.goal.position.x" />
+										<br>
+										<label>Y</label>
+										<input type="number" v-model.number="action.goal.position.y" />
+										<br>
+										<button :disabled="!connected || action.status.status == 1" @click="sendGoal">Start</button>
+										<button :disabled="!connected || ![1].includes(action.status.status)" @click="cancelGoal">Cancel</button>
+									</div>
+									<br>
+								</div>
+									<div class="col-md-6 text-center">
+										<h5>Way Point</h5>
+										<button class="mt-2 btn btn-primary" :disabled="!connected" @click="home_position">Home</button>
+										<br>
+										<button class="mt-2 btn btn-primary" :disabled="!connected" @click="a_position">X:3,Y:3</button>
+										<br>
+										<button class="mt-2 btn btn-primary" :disabled="!connected" @click="b_position">X:3,Y:-3</button>
+										<br>
+										<button class="mt-2 btn btn-primary" :disabled="!connected" @click="c_position">X:-3,Y:3</button>
+										<br>
+										<button class="mt-2 btn btn-primary" :disabled="!connected" @click="d_position">X:-3,Y:-3</button>
+
+
+									</div>
+
+								</div>
+							</div>
+							<div class="col-md-12 col-sm-6" style="overflow:auto;">
+								<div class="row">
+									<div class="col-md-12 text-center">
+										<hr>
+										<div>
+											<label>Feedback</label>
+											<br>
+											<!--
+										<input type="number" disabled readonly="readonly" v-model="action.feedback.progress" />
+                                        -->
+											<p>Position: x [{{ action.feedback.position.x }}] y
+												[{{ action.feedback.position.y }}]</p>
+											<p>Status: {{ action.feedback.state }}</p>
+										</div>
+										<hr>
+										<div>
+											<label>Result</label>
+											<br>
+											<!--
+											<input type="number" disabled readonly="readonly" v-model="action.result.result" />
+                                            -->
+											<p>Success: {{ action.result.success }}</p>
+										</div>
+										<hr>
+										<div>
+											<label>Status</label>
+											<br>
+											<p>{{ action.status.text }}</p>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+			</div>
+			<br>
+
+					</div>
+			<br>
+				</div>
+
+
+	</main>
+
+	<!-- footer -->
+	<footer class="footer mt-auto bg-dark text-light">
+		<div class="container">
+			<h5>page ends here!</h5>
+		</div>
+	</footer>
+	<script type="text/javascript" src="main.js">
+	</script>
+</body>
+
+</html>
