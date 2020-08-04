@@ -16,7 +16,7 @@ var app = new Vue({
         loading: false,
         topic: null,
         message: null,
-        rosbridge_address: 'wss://i-03d2605e5ab5d4713.robotigniteacademy.com/rosbridge/',
+        rosbridge_address: 'ws://192.168.0.105:9090',
         menu_title: "Setup",
         position: { x: 0, y: 0, z: 0, },
         service_busy: false,
@@ -167,22 +167,23 @@ var app = new Vue({
             this.topic.publish(this.message)
         },
         setCamera: function () {
-            let without_wss = this.rosbridge_address.split('wss://')[1]
+            let without_wss = this.rosbridge_address.split('ws://')[1]
             console.log(without_wss)
             let domain = without_wss.split('/')[0]
             console.log(domain)
-            let host = domain + '/cameras'
+            let host = '192.168.0.105:11315'
             let viewer = new MJPEGCANVAS.Viewer({
                 divID: 'divCamera',
                 host: host,
                 width: 320,
                 height: 240,
-                topic: '/camera/rgb/image_raw',
-                ssl: true,
+                topic: '/raspicam_node/image&type=ros_compressed',
+                ssl: false,
+                image_transport: "compressed",
             })
         },
         setCamera2: function () {
-            let without_wss = this.rosbridge_address.split('wss://')[1]
+            let without_wss = this.rosbridge_address.split('ws://')[1]
             console.log(without_wss)
             let domain = without_wss.split('/')[0]
             console.log(domain)
@@ -192,8 +193,9 @@ var app = new Vue({
                 host: host,
                 width: 320,
                 height: 240,
-                topic: '/camera/depth/image_raw',
-                ssl: true,
+                topic: '/raspicam_node/image/compressed',
+                ssl: false,
+
             })
         },
         set_param: function () {
